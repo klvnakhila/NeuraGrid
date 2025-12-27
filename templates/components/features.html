@@ -1,0 +1,37 @@
+<section id="services" class="features">
+    <div class="container">
+        <div class="section-header">
+            <h3>PREDICTIVE DEMAND ANALYTICS</h3>
+            <h2>Optimize energy use with precision</h2>
+        </div>
+        
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-image" style="background-image: url('{{ url_for('static', filename='images/dashboard1.png') }}');"></div>
+                <div class="feature-content">
+                    <h4>Demand prediction model</h4>
+                    <p>Forecasting of short-term electricity demand.</p>
+                    <a href="{{ url_for('demand_forecast') }}" class="learn-more">View Forecast →</a>
+                </div>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-image" style="background-image: url('{{ url_for('static', filename='images/dashboard2.png') }}');"></div>
+                <div class="feature-content">
+                    <h4>Weather impact analysis</h4>
+                    <p>Visualize how weather affects electricity demand.</p>
+                    <a href="{{ url_for('weather_impact') }}" class="learn-more">View Forecast →</a>
+                </div>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-image" style="background-image: url('{{ url_for('static', filename='images/image.png') }}');"></div>
+                <div class="feature-content">
+                    <h4>Solar Generation Forecast</h4>
+                    <p>coming soon...</p>
+                    <a href="{{ url_for('solar_forecast') }}" class="learn-more">View Forecast →</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.pyc
+*.pkl
+*.h5
+
+# Virtual env
+venv/
+.env/
+
+# Node
+node_modules/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Data & outputs
+*.log
+*.csv
+
+
+# IDE
+.vscode/
+.idea/

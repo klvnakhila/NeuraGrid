@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block title %}Solar Generation Forecast | NeuraGrid{% endblock %}
+
+{% block extra_css %}
+<style>
+    .solar-container {
+        max-width: 1200px;
+        margin: 100px auto 50px;
+        padding: 0 20px;
+    }
+
+    .solar-card {
+        background: #ffffff;
+        border-radius: 12px;
+        padding: 40px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    .solar-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 25px;
+    }
+
+    .solar-title {
+        font-size: 2.3rem;
+        font-weight: 700;
+        color: #2c3e50;
+    }
+
+    .status-badge {
+        background: #f1c40f;
+        color: #2c3e50;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+
+    .solar-section {
+        margin-bottom: 30px;
+    }
+
+    .solar-section h3 {
+        font-size: 1.4rem;
+        color: #34495e;
+        margin-bottom: 10px;
+    }
+
+    .solar-section p {
+        font-size: 1.05rem;
+        line-height: 1.7;
+        color: #555;
+    }
+
+    .solar-list {
+        margin-top: 10px;
+        padding-left: 20px;
+    }
+
+    .solar-list li {
+        margin-bottom: 8px;
+        font-size: 1.05rem;
+        color: #444;
+    }
+
+    .solar-highlight {
+        background: linear-gradient(135deg, #27ae60, #2ecc71);
+        color: white;
+        padding: 25px;
+        border-radius: 10px;
+        font-size: 1.1rem;
+        line-height: 1.6;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="solar-container">
+    <div class="solar-card">
+
+        <!-- Header -->
+        <div class="solar-header">
+            <h1 class="solar-title">Solar Generation Forecast</h1>
+            <span class="status-badge">🚧 Coming Soon</span>
+        </div>
+
+        <!-- What is Solar Forecasting -->
+        <div class="solar-section">
+            <h3>What is Solar Generation Forecasting?</h3>
+            <p>
+                Solar generation forecasting estimates the amount of electricity that will be produced
+                by solar power plants based on weather conditions and historical generation data.
+                Accurate forecasting helps in efficiently integrating renewable energy into the power grid.
+            </p>
+        </div>
+
+        <!-- Why it Matters -->
+        <div class="solar-section">
+            <h3>Why is it Important?</h3>
+            <ul class="solar-list">
+                <li>🌞 Supports large-scale integration of renewable energy</li>
+                <li>⚡ Helps balance electricity demand and supply</li>
+                <li>📉 Reduces dependency on fossil fuels</li>
+                <li>🌍 Contributes to sustainable and eco-friendly power systems</li>
+            </ul>
+        </div>
+
+        <!-- Planned Implementation -->
+        <div class="solar-section">
+            <h3>Planned Implementation</h3>
+            <p>
+                This module will use machine learning models such as LSTM or GRU to predict
+                short-term solar power generation. The predictions will be driven by real-time
+                weather data and historical solar generation patterns.
+            </p>
+
+            <ul class="solar-list">
+                <li>📊 Inputs: Solar irradiance, temperature, cloud cover</li>
+                <li>🧠 Model: Time-series deep learning (LSTM / GRU)</li>
+                <li>🔗 Integration: Weather APIs and power grid data</li>
+            </ul>
+        </div>
+
+        <!-- Sustainability Message -->
+        <div class="solar-highlight">
+            This feature aligns with NeuraGrid’s long-term vision of promoting renewable
+            energy awareness and building intelligent, sustainable power management systems.
+        </div>
+
+    </div>
+</div>
+{% endblock %}

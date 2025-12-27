@@ -1,0 +1,250 @@
+{% extends "base.html" %}
+
+{% block title %}Demand Prediction - NeuraGrid{% endblock %}
+
+{% block extra_css %}
+<style>
+    .prediction-container {
+        max-width: 1200px;
+        margin: 100px auto 50px;
+        padding: 0 20px;
+    }
+    
+    .forecast-graph {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        padding: 30px;
+        margin-bottom: 30px;
+    }
+    
+    .graph-controls {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    
+    .horizon-selector {
+        display: flex;
+        gap: 15px;
+    }
+    
+    .horizon-btn {
+        padding: 8px 20px;
+        border: 1px solid #1f77b4;
+        border-radius: 20px;
+        background: white;
+        color: #1f77b4;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .horizon-btn.active {
+        background: #1f77b4;
+        color: white;
+    }
+    
+    .summary-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .summary-card {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    }
+    
+    .summary-card h3 {
+        color: #666;
+        font-size: 14px;
+        margin-bottom: 10px;
+    }
+    
+    .summary-value {
+        font-size: 28px;
+        font-weight: 600;
+        color: #1f77b4;
+        margin-bottom: 5px;
+    }
+    
+    .change {
+        font-size: 14px;
+    }
+    
+    .change.positive {
+        color: #2ecc71;
+    }
+    
+    .change.negative {
+        color: #e74c3c;
+    }
+    
+    #demandChart {
+         width: 100%;
+         height: 250px;   /* ideal for one-screen view */
+         max-height: 250px;
+    }
+    
+    .model-info {
+        text-align: center;
+        color: #666;
+        font-size: 14px;
+        margin-top: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="prediction-container">
+    <h1>Electricity Demand Forecast</h1>
+    <p class="subtitle">Short-term demand predictions for Telangana's power grid using GRU model</p>
+    
+    <div class="summary-cards">
+        <div class="summary-card">
+            <h3>Average Expected Demand</h3>
+            <div class="summary-value" id="avg-demand">{{ forecast_data.avg_demand }} MW</div>
+            <div class="change" id="demand-change">{{ forecast_data.change_pct }}</div>
+        </div>
+        <div class="summary-card">
+            <h3>Forecast Horizon</h3>
+            <div class="summary-value" id="forecast-horizon">
+                {% if forecast_data.forecast_days == 1 %}Next Day{% else %}Next {{ forecast_data.forecast_days }} Days{% endif %}
+            </div>
+            <div class="change" id="last-updated">Last updated: {{ forecast_data.last_updated }}</div>
+        </div>
+    </div>
+    
+    <div class="forecast-graph">
+        <div class="graph-controls">
+            <h2>Demand Forecast</h2>
+            <div class="horizon-selector">
+                <a href="/demand-forecast/1" class="horizon-btn {% if forecast_data.forecast_days == 1 %}active{% endif %}">24 Hours</a>
+                <a href="/demand-forecast/7" class="horizon-btn {% if forecast_data.forecast_days == 7 %}active{% endif %}">Next 7 Days</a>
+            </div>
+        </div>
+        <canvas id="demandChart"></canvas>
+        <div class="model-info">
+            Predictions powered by GRU deep learning model | Updated hourly
+        </div>
+    </div>
+    
+    <!-- <div class="forecast-graph">
+        <h2>Forecast Accuracy</h2>
+        <p>Comparison of predicted vs actual demand for the past 7 days</p>
+        <div id="accuracyChart"></div>
+    </div>
+</div> -->
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/moment"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment"></script>
+<script>
+// Data from Flask backend
+const forecastData = {
+    timestamps: {{ forecast_data.timestamps | tojson | safe }},
+    predictions: {{ forecast_data.gru_predictions | tojson | safe }},
+    forecastDays: {{ forecast_data.forecast_days }}
+};
+
+// Initialize charts
+let demandChart;
+
+function initCharts() {
+    // Demand Forecast Chart
+    const ctx1 = document.getElementById('demandChart').getContext('2d');
+    
+    // Convert timestamps to Date objects for Chart.js
+    const labels = forecastData.timestamps.map(ts => new Date(ts));
+    
+    demandChart = new Chart(ctx1, {
+        type: forecastData.forecastDays === 1 ? 'bar' : 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'GRU Forecast',
+                    data: forecastData.predictions,
+                    borderColor: '#1f77b4',
+                    backgroundColor: forecastData.forecastDays === 1 ? '#1f77b4' : 'rgba(31, 119, 180, 0.1)',
+                    borderWidth: forecastData.forecastDays === 1 ? 0 : 3,
+                    fill: forecastData.forecastDays === 1 ? true : true,
+                    tension: forecastData.forecastDays === 1 ? 0 : 0.4,
+                    pointRadius: forecastData.forecastDays === 1 ? 0 : 5,
+                    pointHoverRadius: forecastData.forecastDays === 1 ? 0 : 7,
+                    barThickness: forecastData.forecastDays === 1 ? 80 : undefined,
+                    maxBarThickness: forecastData.forecastDays === 1 ? 80 : undefined                
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                    callbacks: {
+                        label: function(context) {
+                            return `Forecast: ${context.raw.toLocaleString()} MW`;
+                        }
+                    }
+                },
+                legend: {
+                    position: 'top',
+                    labels: {
+                        font: {
+                            size: 14
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    type: 'time',
+                    time: {
+                        unit: 'day',
+                        tooltipFormat: 'MMM D, YYYY',
+                        displayFormats: {
+                            day: 'MMM D'
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Date',
+                        font: {
+                            size: 14
+                        }
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Demand (MW)',
+                        font: {
+                            size: 14
+                        }
+                    },
+                    ticks: {
+                        callback: function(value) {
+                            return value.toLocaleString() + ' MW';
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Initialize everything when the page loads
+document.addEventListener('DOMContentLoaded', function() {
+    initCharts();
+});
+</script>
+{% endblock %}

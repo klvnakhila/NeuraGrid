@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+
+{% block title %}Weather Impact - NeuraGrid{% endblock %}
+
+{% block extra_css %}
+<style>
+    .weather-container {
+        max-width: 1200px;
+        margin: 100px auto 50px;
+        padding: 0 20px;
+    }
+    
+    .weather-section {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        padding: 30px;
+        margin-bottom: 30px;
+    }
+    
+    .correlation-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 16px;
+        margin: 20px 0;
+    }
+    
+    .correlation-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+    }
+    
+    .correlation-card h3 {
+        margin: 0 0 8px 0;
+        font-size: 1.1rem;
+        font-weight: 500;
+    }
+    
+    .correlation-value {
+        font-size: 1.8rem;
+        font-weight: bold;
+    }
+    
+    .scatter-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 24px;
+        margin-top: 24px;
+    }
+    
+    .scatter-card {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 16px;
+    }
+    
+    .scatter-card h4 {
+        margin: 0 0 12px 0;
+        font-size: 1rem;
+        color: #2c3e50;
+    }
+    
+    .page-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 12px;
+    }
+    
+    .page-subtitle {
+        font-size: 1.1rem;
+        color: #7f8c8d;
+        margin-bottom: 30px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="weather-container">
+    <div class="weather-section">
+        <h1 class="page-title">Weather Impact Analysis</h1>
+        <p class="page-subtitle">How weather variables correlate with electricity demand</p>
+        
+        <h2>Correlation Overview</h2>
+        <div class="correlation-grid">
+            {% for col in weather_data.columns %}
+                {% set corr = weather_data.correlation[col] %}
+                <div class="correlation-card">
+                    <h3>{{ col | title }}</h3>
+                    <div class="correlation-value">
+                        {% if corr is not none %}{{ "%.3f"|format(corr) }}{% else %}N/A{% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <h2>Detailed Scatter Plots</h2>
+        <div class="scatter-grid">
+            {% for col in weather_data.columns %}
+                {% set data = weather_data.scatter[col] %}
+                <div class="scatter-card">
+                    <h4>{{ col | title }} vs Demand</h4>
+                    <canvas id="weather-scatter-{{ col }}"></canvas>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const weatherData = {{ weather_data.scatter | tojson | safe }};
+
+function initWeatherCharts() {
+    for (const [col, data] of Object.entries(weatherData)) {
+
+        const canvas = document.getElementById(`weather-scatter-${col}`);
+        if (!canvas) continue;
+
+        const ctx = canvas.getContext('2d');
+
+        new Chart(ctx, {
+            type: 'scatter',
+            data: {
+                datasets: [{
+                    label: 'Demand',
+                    data: data.x.map((x, i) => ({
+                        x: x,
+                        y: data.y[i]
+                    })),
+                    backgroundColor: 'rgba(52, 152, 219, 0.6)',
+                    borderColor: '#3498db',
+                    pointRadius: 3,
+                    pointHoverRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: {
+                        type: 'linear',
+                        position: 'bottom',
+                        title: {
+                            display: true,
+                            text: col.charAt(0).toUpperCase() + col.slice(1),
+                            font: { size: 12 }
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Demand (MW)',
+                            font: { size: 12 }
+                        },
+                        ticks: {
+                            callback: value => value.toLocaleString()
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `${col.charAt(0).toUpperCase() + col.slice(1)}: ${context.parsed.x.toFixed(2)} | Demand: ${context.parsed.y.toLocaleString()} MW`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+}
+
+document.addEventListener('DOMContentLoaded', initWeatherCharts);
+</script>
+{% endblock %}
